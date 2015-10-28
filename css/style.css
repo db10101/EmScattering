@@ -2,12 +2,26 @@ body {
   background: white;
   font-family: sans-serif;
 }
-.overlay-marker {
-       width: 50px;
-       height: 50px;
+
+
+
+
+/*Structure overlay management*/
+.overlay {
        position: absolute;
-       opacity: .4;
+       opacity: .5;
+       /*background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAN0lEQVQYV2NkIAIwEqHmPyFF/xkYGBgJKQJbhEsR2ASYU7ApQlGAzyQU/yCbhGECunU4FYAUAgBp4wYJDzYgLgAAAABJRU5ErkJggg==) repeat;*/
    }
+rect.struct {
+  mask:url(#mask-stripe);
+}
+
+.rect1 {
+  fill: blue;
+}
+
+
+   /**/
 .wrapper {
   background: white;
   margin: auto;
@@ -16,14 +30,37 @@ body {
 }
 .hiddentab {
   opacity: .0;
+  transition: opacity .5s ease-in-out;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
 
 }
- 
+.hiddenButtons {
+  display: inline;
+  opacity: .0;
+  transition: opacity .5s ease-in-out;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
+}
+
+
+
+#linechart_material {
+  position: absolute;
+    top: 300px;
+    left: 180px;
+}
+#linechart2_material {
+    position: absolute;
+    top: 300px;
+    left: 180px;
+}
+
 #hiddenModes {
   opacity: .0;
-}
-#hiddenButtons {
-  opacity: .0;
+  transition: opacity .5s ease-in-out;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
 }
 h1 {
   text-align: center;

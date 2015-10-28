@@ -5,18 +5,23 @@ var mu = [];
 var length = [];
 var crystal;
 
-
-function addInput(divName){
-     if (counter == limit)  {
-          alert("You have reached the limit of adding " + counter + " inputs");
-     }
-     else {
-          var newdiv = document.createElement('div');
-          newdiv.innerHTML = "Entry " + (counter + 1) + " <br><input type='text' name='myInputs[]'>";
-          document.getElementById(divName).appendChild(newdiv);
-          counter++;
-     }
+function quickDraw() {
+     addNumLayers('dynamicInput', 3);
+     fillSampleValues();
+     buildCrystal();
+     printChart('linechart2_material', 900, 500);
 }
+
+function addStruct(x, color, width, height) {
+     var overlayDiv = "<div class='overlay"+x+"'><svg width='"+width+"' height='"+height+"'><defs><pattern id='pattern-stripe' width='4' height='4' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'><rect width='2' height='4' transform='translate(0,0)' fill='white'></rect></pattern><mask id='mask-stripe'><rect x='0' y='0' width='100%' height='100%' fill='url(#pattern-stripe)' /></mask></defs><rect class='struct rect" + x + "' width='500' height='500' fill='" + color + "'></svg></div>"
+    $(".addHere").append(overlayDiv);
+}
+
+function addStruct1() {
+     addStruct(3, 'red', 100, 300);
+
+}
+
 function addNumLayers(divName, numInputs){
      numberOfLayers = parseInt(numInputs) + 2;
      if(counter<numberOfLayers) {
@@ -28,7 +33,7 @@ function addNumLayers(divName, numInputs){
                addNumLayers(divName, numInputs);
 
      }
-     var myElements = document.querySelectorAll("#hiddenButtons");
+     var myElements = document.querySelectorAll(".hiddenButtons");
      for (var i = 0; i < myElements.length; i++) {
                myElements[i].style.opacity = 1;
           }
@@ -58,7 +63,7 @@ function fillSampleValues() {
      document.getElementById("j3").value = jj3;
      document.getElementById("j4").value = jj4;
 }
-function printChart() {
+function printChart(divName, width, height) {
      var o = parseFloat(document.getElementById("omega").value);
      var k1 = parseFloat(document.getElementById("k1").value);
      var k2 = parseFloat(document.getElementById("k2").value);
@@ -71,10 +76,14 @@ function printChart() {
 
      //fields = crystal1.determineField(1, .2, .4, [1,0,-1,0]);
      fields = crystal1.determineField(o, k1, k2, [j1, j2, j3, j4]);
-
+     interfaces = crystal1.materialInterfaces();
+     hAx = parseInt(fields.z[fields.z.length-1]);
+     console.log(hAx)
      var data = new google.visualization.DataTable();
      data.addColumn('number', 'z');
      data.addColumn('number', document.getElementById("shownVal").value);
+     //Iterate through fields values 
+
      for(var i = 0, N = fields.z.length; i < N; i++) {
           if(document.getElementById("shownVal").value=='Ex') {
                data.addRows([
@@ -98,17 +107,44 @@ function printChart() {
           }
           console.log(fields.z[i]+" "+fields.Ex[i]+" "+fields.Ey[i]+" "+fields.Hx[i] +" "+fields.Hy[i]);
      }
+
      var options = {
         chart: {
           title: document.getElementById("shownVal").value+ ' Values in Relation to Z'
         },
-        width: 900,
-        height: 500
-      };
+        width: width,
+        height: height,
+        vAxis: { gridlines: { count: hAx } },
+        hAxis: { gridlines: { count: hAx } }
 
-     var chart = new google.charts.Line(document.getElementById('linechart_material'));
+        };
 
-      chart.draw(data, options);
+     function printInterfaces(dataTable) {
+          var cli = this.getChartLayoutInterface();
+          var chartArea = cli.getChartAreaBoundingBox();
+          var cols = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+          var w = cli.getXLocation(interfaces[1]) - cli.getXLocation(interfaces[0]);
+          var y = cli.getYLocation(-1) - cli.getYLocation(1);
+          console.log(interfaces);
+          console.log("w:"+w);
+          console.log("y:"+y);
+          for (var i = 0; i < interfaces.length-1; i++) {
+               var w = cli.getXLocation(interfaces[i+1])-cli.getXLocation(interfaces[i]);
+               addStruct(i, cols[i%5], w, y);
+               document.querySelector('.overlay'+i).style.position = 'absolute';
+               document.querySelector('.overlay'+i).style.opacity = '.5';
+               document.querySelector('.overlay'+i).style.top = Math.floor(cli.getYLocation(1)) + 300 + "px";
+               document.querySelector('.overlay'+i).style.left = Math.floor(cli.getXLocation(interfaces[i])) + 180 + "px";
+          };
+
+
+
+     }
+
+     var chart = new google.visualization.LineChart(document.getElementById(divName));
+     google.visualization.events.addListener(chart, 'ready', printInterfaces.bind(chart, data));
+     //var chart = new google.charts.Line(document.getElementById('linechart_material'));
+     chart.draw(data, options);
 
 
 }
