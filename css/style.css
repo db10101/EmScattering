@@ -28,6 +28,21 @@ rect.struct {
   padding: 1em;
   width: 95%;
 }
+.hiddenChart {
+  opacity: .0;
+  transition: opacity .5s ease-in-out;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
+
+}
+
+.hiddenChart1 {
+  opacity: .0;
+  transition: opacity .5s ease-in-out;
+  -moz-transition: opacity .5s ease-in-out;
+  -webkit-transition: opacity .5s ease-in-out;
+
+}
 .hiddentab {
   opacity: .0;
   transition: opacity .5s ease-in-out;
@@ -47,13 +62,13 @@ rect.struct {
 
 #linechart_material {
   position: absolute;
-    top: 300px;
-    left: 180px;
+    top: 330px;
+    left: 20px;
 }
 #linechart2_material {
     position: absolute;
-    top: 300px;
-    left: 180px;
+    top: 330px;
+    left: 20px;
 }
 
 #hiddenModes {

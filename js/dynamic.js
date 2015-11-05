@@ -9,10 +9,11 @@ function quickDraw() {
      addNumLayers('dynamicInput', 3);
      fillSampleValues();
      buildCrystal();
-     printChart('linechart2_material', 900, 500);
+     printFieldsChart('linechart2_material', 900, 500);
 }
 
 function addStruct(x, color, width, height) {
+
      var overlayDiv = "<div class='overlay"+x+"'><svg width='"+width+"' height='"+height+"'><defs><pattern id='pattern-stripe' width='4' height='4' patternUnits='userSpaceOnUse' patternTransform='rotate(45)'><rect width='2' height='4' transform='translate(0,0)' fill='white'></rect></pattern><mask id='mask-stripe'><rect x='0' y='0' width='100%' height='100%' fill='url(#pattern-stripe)' /></mask></defs><rect class='struct rect" + x + "' width='500' height='500' fill='" + color + "'></svg></div>"
     $(".addHere").append(overlayDiv);
 }
@@ -26,7 +27,7 @@ function addNumLayers(divName, numInputs){
      numberOfLayers = parseInt(numInputs) + 2;
      if(counter<numberOfLayers) {
           var newdiv = document.createElement('div');
-          newdiv.innerHTML = "Layer " + (counter + 1) + " <br><b>Epsilon:</b> <input type='text' id='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' id = 'l"+counter +"'>";
+          newdiv.innerHTML = "Layer " + (counter + 1) + " <br><b>Epsilon:</b> <input type='text' size='6' id='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' size='6'  id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' size='6' id = 'l"+counter +"'>";
           document.getElementById(divName).appendChild(newdiv);
           counter++;
           if(counter<numberOfLayers)
@@ -63,7 +64,63 @@ function fillSampleValues() {
      document.getElementById("j3").value = jj3;
      document.getElementById("j4").value = jj4;
 }
-function printChart(divName, width, height) {
+function printDispersionChart(divName, width, height) {
+     var crystal = new emScattering.PhotonicStructure1D(epsilon, mu, length);
+     var k1 = parseFloat(document.getElementById("k1").value);
+     var k2 = parseFloat(document.getElementById("k2").value);
+     dispersion = crystal.dispersionRelationship(k1,k2,4,100);
+     var data = new google.visualization.DataTable();
+      data.addColumn('number', 'kz');
+      for(var i = 0; i < dispersion.layersDispersions.length; i++){
+        data.addColumn('number', 'Layer'+i);
+      }
+      var dataArray = new Array(dispersion.kz.length) ;
+      for(var i = 0; i < dataArray.length; i++)
+      {
+        dataArray[i] = new Array(dispersion.layersDispersions.length+1);
+      }
+
+      for (var i = 0; i< dispersion.kz.length; i++) {
+        dataArray[i][0]= dispersion.kz[i];
+        for(var j = 1; j<dispersion.layersDispersions.length+1; j++){
+          dataArray[i][j]=dispersion.layersDispersions[j-1][i];
+          //this is where it fails
+          //j not including first dispersion 
+        }
+      }
+      for(var i = 0; i<dataArray.length; i++){
+        data.addRows([
+          dataArray[i]
+          ]);
+      }
+      var options = {
+        chart: {
+          title: 'dispersion relationship'
+        },
+        chartArea: {
+          left: 40,
+          top: 5
+        },
+        width: width,
+        height: height,
+        hAxis: {viewWindow:{ min: -4 }}
+      };
+
+      var chart = new google.visualization.LineChart(document.getElementById(divName));
+
+      chart.draw(data, options);
+      console.log(dataArray[0][1]);
+      //emScattering.printDispersion(dispersion);
+
+      var myElements = document.querySelectorAll(".hiddenChart1");
+     for (var i = 0; i < myElements.length; i++) {
+               myElements[i].style.opacity = 1;
+          }
+
+    
+
+}
+function printFieldsChart(divName, width, height) {
      var o = parseFloat(document.getElementById("omega").value);
      var k1 = parseFloat(document.getElementById("k1").value);
      var k2 = parseFloat(document.getElementById("k2").value);
@@ -71,14 +128,30 @@ function printChart(divName, width, height) {
      var j2 = parseFloat(document.getElementById("j2").value);
      var j3 = parseFloat(document.getElementById("j3").value);
      var j4 = parseFloat(document.getElementById("j4").value);
+
      console.log("o:"+o+" k1:"+k1+" k2:"+k2+" j1:"+j1+" j2:"+j2+" j3:"+j3+" j4:"+j4);
      crystal1 = new emScattering.PhotonicStructure1D(epsilon, mu, length);
 
-     //fields = crystal1.determineField(1, .2, .4, [1,0,-1,0]);
      fields = crystal1.determineField(o, k1, k2, [j1, j2, j3, j4]);
      interfaces = crystal1.materialInterfaces();
-     hAx = parseInt(fields.z[fields.z.length-1]);
-     console.log(hAx)
+     if(document.getElementById("zMax").value != '')
+     {
+          zMax = document.getElementById("zMax").value;
+     }
+     else 
+     {
+          zMax = parseInt(fields.z[fields.z.length-1]);
+          console.log("zmax assigned field:"+zMax);
+     }
+     if(document.getElementById("zMin").value != '')
+     {
+          zMin = document.getElementById("zMin").value;
+     }
+     else 
+     {
+          zMin = parseInt(fields.z[0]);
+     }
+
      var data = new google.visualization.DataTable();
      data.addColumn('number', 'z');
      data.addColumn('number', document.getElementById("shownVal").value);
@@ -114,8 +187,18 @@ function printChart(divName, width, height) {
         },
         width: width,
         height: height,
-        vAxis: { gridlines: { count: hAx } },
-        hAxis: { gridlines: { count: hAx } }
+        chartArea: {
+          left: 40,
+          top: 5
+        },
+        vAxis: { gridlines: { count: zMax } },
+        hAxis: { 
+          gridlines: { count: zMax },
+          viewWindow: { 
+               min: zMin, 
+               max: zMax
+          }
+          }
 
         };
 
@@ -124,17 +207,32 @@ function printChart(divName, width, height) {
           var chartArea = cli.getChartAreaBoundingBox();
           var cols = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
           var w = cli.getXLocation(interfaces[1]) - cli.getXLocation(interfaces[0]);
-          var y = cli.getYLocation(-1) - cli.getYLocation(1);
+          var y = cli.getChartAreaBoundingBox().height;
           console.log(interfaces);
           console.log("w:"+w);
           console.log("y:"+y);
+          console.log("gety:" + Math.floor(cli.getYLocation(1)));
+          console.log("bounding:" + cli.getChartAreaBoundingBox().top);
+          var yBound = cli.getChartAreaBoundingBox().top;
+          Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
+    }
+    //allows removal of elements without parents
+    NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+     }
+     }
           for (var i = 0; i < interfaces.length-1; i++) {
                var w = cli.getXLocation(interfaces[i+1])-cli.getXLocation(interfaces[i]);
+               document.getElementsByClassName('overlay'+i).remove();
                addStruct(i, cols[i%5], w, y);
                document.querySelector('.overlay'+i).style.position = 'absolute';
                document.querySelector('.overlay'+i).style.opacity = '.5';
-               document.querySelector('.overlay'+i).style.top = Math.floor(cli.getYLocation(1)) + 300 + "px";
-               document.querySelector('.overlay'+i).style.left = Math.floor(cli.getXLocation(interfaces[i])) + 180 + "px";
+               document.querySelector('.overlay'+i).style.top = Math.floor(cli.getChartAreaBoundingBox().top) + 330 + "px";
+               document.querySelector('.overlay'+i).style.left = Math.floor(cli.getXLocation(interfaces[i])) + 20 + "px";
           };
 
 
@@ -146,8 +244,15 @@ function printChart(divName, width, height) {
      //var chart = new google.charts.Line(document.getElementById('linechart_material'));
      chart.draw(data, options);
 
+     var myElements = document.querySelectorAll(".hiddenChart");
+     for (var i = 0; i < myElements.length; i++) {
+               myElements[i].style.opacity = 1;
+          }
 
 }
+
+
+
 function getIncomingMode() {
      omega = document.getElementById("omega").value;
      k1 = document.getElementById("k1").value;
