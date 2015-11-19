@@ -10,6 +10,9 @@ function quickDraw() {
      fillSampleValues();
      buildCrystal();
      printFieldsChart('linechart2_material', 900, 500);
+     getIncomingMode();
+     printDispersionChart('dispersionChart', 900, 500);
+
 }
 
 function addStruct(x, color, width, height) {
@@ -23,16 +26,51 @@ function addStruct1() {
 
 }
 
+function addNumLayers2(divName, numInputs) {
+  numberOfLayers = parseInt(numInputs) + 2;
+  var layersToAdd = numberOfLayers;
+  if(counter<layersToAdd) {
+    if(counter==0) {
+
+      // document.getElementsByClassName("h"+counter).remove();
+      $("#h"+counter).remove();
+      var newdiv = document.createElement('div');
+      newdiv.innerHTML = "<div id='h"+counter+"'>Ambient Left " + " <br><b>Epsilon:</b> <input type='text' size='6' id='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' size='6'  id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' size='6' id = 'l"+counter +"'></div>";
+      document.getElementById(divName).appendChild(newdiv);         
+      counter++;
+      addNumLayers2(divName, numInputs);
+    } else if((counter+1)<layersToAdd) {
+      $("#h"+counter).remove();
+      // document.getElementsByClassName("h"+counter).remove();
+      var newdiv = document.createElement('div');
+      newdiv.innerHTML = "<div id='h"+counter+"'>Layer" + (counter) + " <br><b>Epsilon:</b> <input type='text' size='6' id='e"+counter+"' class='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' size='6'  id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' size='6' id = 'l"+counter +"'> </div>";
+      document.getElementById(divName).appendChild(newdiv);
+      counter++;
+      addNumLayers2(divName, numInputs);
+    } else if((counter+1)==layersToAdd) {
+      // document.getElementsByClassName("h"+counter).remove();
+      $("#h"+counter).remove();
+      var newdiv = document.createElement('div');
+      newdiv.innerHTML = "<div id='h"+counter+"'>Ambient Right" + " <br><b>Epsilon:</b> <input type='text' size='6' id='e"+counter+"' class='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' size='6'  id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' size='6' id = 'l"+counter +"'> </div>";
+      document.getElementById(divName).appendChild(newdiv);
+      counter = 0;
+    }
+  }
+}
+
 function addNumLayers(divName, numInputs){
      numberOfLayers = parseInt(numInputs) + 2;
      if(counter<numberOfLayers) {
+
           var newdiv = document.createElement('div');
           newdiv.innerHTML = "Layer " + (counter + 1) + " <br><b>Epsilon:</b> <input type='text' size='6' id='e"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Mu:</b> <input type= 'text' size='6'  id = 'm"+ counter +"'> &nbsp;&nbsp;&nbsp; <b>Length:</b> <input type = 'text' size='6' id = 'l"+counter +"'>";
           document.getElementById(divName).appendChild(newdiv);
           counter++;
-          if(counter<numberOfLayers)
-               addNumLayers(divName, numInputs);
+          if(counter<numberOfLayers) {
+            addNumLayers(divName, numInputs);
+          }
 
+               
      }
      var myElements = document.querySelectorAll(".hiddenButtons");
      for (var i = 0; i < myElements.length; i++) {
@@ -65,10 +103,12 @@ function fillSampleValues() {
      document.getElementById("j4").value = jj4;
 }
 function printDispersionChart(divName, width, height) {
+
+     var range = document.getElementById("range").value;
      var crystal = new emScattering.PhotonicStructure1D(epsilon, mu, length);
      var k1 = parseFloat(document.getElementById("k1").value);
      var k2 = parseFloat(document.getElementById("k2").value);
-     dispersion = crystal.dispersionRelationship(k1,k2,4,100);
+     dispersion = crystal.dispersionRelationship(k1,k2,range,100);
      var data = new google.visualization.DataTable();
       data.addColumn('number', 'kz');
       for(var i = 0; i < dispersion.layersDispersions.length; i++){
@@ -102,8 +142,7 @@ function printDispersionChart(divName, width, height) {
           top: 5
         },
         width: width,
-        height: height,
-        hAxis: {viewWindow:{ min: -4 }}
+        height: height
       };
 
       var chart = new google.visualization.LineChart(document.getElementById(divName));
@@ -134,23 +173,8 @@ function printFieldsChart(divName, width, height) {
 
      fields = crystal1.determineField(o, k1, k2, [j1, j2, j3, j4]);
      interfaces = crystal1.materialInterfaces();
-     if(document.getElementById("zMax").value != '')
-     {
-          zMax = document.getElementById("zMax").value;
-     }
-     else 
-     {
-          zMax = parseInt(fields.z[fields.z.length-1]);
-          console.log("zmax assigned field:"+zMax);
-     }
-     if(document.getElementById("zMin").value != '')
-     {
-          zMin = document.getElementById("zMin").value;
-     }
-     else 
-     {
-          zMin = parseInt(fields.z[0]);
-     }
+     
+     
 
      var data = new google.visualization.DataTable();
      data.addColumn('number', 'z');
@@ -190,15 +214,7 @@ function printFieldsChart(divName, width, height) {
         chartArea: {
           left: 40,
           top: 5
-        },
-        vAxis: { gridlines: { count: zMax } },
-        hAxis: { 
-          gridlines: { count: zMax },
-          viewWindow: { 
-               min: zMin, 
-               max: zMax
-          }
-          }
+        }
 
         };
 
@@ -214,17 +230,17 @@ function printFieldsChart(divName, width, height) {
           console.log("gety:" + Math.floor(cli.getYLocation(1)));
           console.log("bounding:" + cli.getChartAreaBoundingBox().top);
           var yBound = cli.getChartAreaBoundingBox().top;
-          Element.prototype.remove = function() {
-    this.parentElement.removeChild(this);
-    }
-    //allows removal of elements without parents
-    NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
-    for(var i = this.length - 1; i >= 0; i--) {
-        if(this[i] && this[i].parentElement) {
-            this[i].parentElement.removeChild(this[i]);
-        }
-     }
-     }
+    //       Element.prototype.remove = function() {
+    // this.parentElement.removeChild(this);
+    // }
+    // //allows removal of elements without parents
+    // NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    // for(var i = this.length - 1; i >= 0; i--) {
+    //     if(this[i] && this[i].parentElement) {
+    //         this[i].parentElement.removeChild(this[i]);
+    //     }
+    //  }
+    //  }
           for (var i = 0; i < interfaces.length-1; i++) {
                var w = cli.getXLocation(interfaces[i+1])-cli.getXLocation(interfaces[i]);
                document.getElementsByClassName('overlay'+i).remove();
@@ -269,8 +285,10 @@ function getIncomingMode() {
 
      var newdiv = document.createElement('div');
      var newdiv2 = document.createElement('div');
-     newdiv.innerHTML = "<u>"+mFor1x+"x + "+mFor1y+"iy<br> "+mFor2x+"x + "+mFor2y+"iy</u>";
-     newdiv2.innerHTML = "<u>"+mBack1x+"x + "+mBack1y+"iy<br> "+mBack2x+"x + "+mBack2y+"iy</u>";
+     $("#mode1").remove();
+     $("#mode2").remove();
+     newdiv.innerHTML = "<div id='mode1'><u>"+mFor1x+" + "+mFor1y+"i<br> "+mFor2x+"x + "+mFor2y+"i</u></div>";
+     newdiv2.innerHTML = "<div id='mode2'><u>"+mBack1x+" + "+mBack1y+"i<br> "+mBack2x+"x + "+mBack2y+"i</u></div>";
      document.getElementById("forwardModes").appendChild(newdiv);
      document.getElementById("backwardModes").appendChild(newdiv2);
      //emScattering.printModes(incoming);
@@ -299,7 +317,7 @@ function buildCrystal() {
      console.log(mu);
      console.log(length);
      crystal = new emScattering.PhotonicStructure1D(epsilon, mu, length);
-     alert("Variables assigned. Crystal created; layers including ambients = "+layers);
+     //alert("Variables assigned. Crystal created; layers including ambients = "+layers);
 }
      
 

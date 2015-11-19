@@ -24,11 +24,13 @@
 </svg>
 
 -->
+
+<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'>
+    </script>
+    <script src="js/tabs.js">
+    </script>
 <!-- Jquery practice -->
-<script>
 
-
-</script>
 
 <body>
     <script>
@@ -45,11 +47,19 @@
         test = document.getElementById("l" + x).value;
         console.log(test);
     }
-
-    function setNumLayers(event) {
-        numOfLayers = this.options[this.selectedIndex].text;
-        //alert(this.options[this.selectedIndex].text);
+    Element.prototype.remove = function() {
+    this.parentElement.removeChild(this);
     }
+    //allows removal of elements without parents
+    NodeList.prototype.remove = HTMLCollection.prototype.remove = function() {
+    for(var i = this.length - 1; i >= 0; i--) {
+        if(this[i] && this[i].parentElement) {
+            this[i].parentElement.removeChild(this[i]);
+        }
+     }
+     }
+
+    
     
     
     
@@ -61,21 +71,15 @@
             <li>
                 <a href="#tab1">Structure</a>
             </li>
-            <div class="hiddentab">
                 <li>
                     <a href="#tab2">Scattering</a>
                 </li>
-                </div>
-            <div class="hiddenChart">
                 <li>
-                    <a href="#tab3">Fields Chart</a>
+                    <a href="#tab3">Field Graph</a>
                 </li>
-            </div>
-            <div class="hiddenChart1">
                 <li>
-                    <a href="#tab4">Dispersion Chart</a>
+                    <a href="#tab4">Dispersion Graph</a>
                 </li>
-            </div>
             
         </ul>
         <div class="clr"></div>
@@ -86,43 +90,35 @@
             <article id="tab1">
                 <form>
                     <i> Number of Layers: </i>
-                    <select id="numLayers" onchange="setNumLayers.call(this, event)">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3" selected="selected">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <script>
-                        numOfLayers = document.getElementById("numLayers").value;
-                        </script>
-                    </select>
-                    <input onclick="addNumLayers('dynamicInput', numOfLayers);" type="button" value="Submit Number of Layers">&nbsp;&nbsp;
-                    <div class="hiddenButtons">
+                    <input type="text" id="numLayers" value ="3" size="3"> </form>
+                    <script>
+                    numOfLayers = document.getElementById("numLayers").value;
+                    </script>
+                    <input onclick="addNumLayers2('dynamicInput', numOfLayers);" type="button" value="Submit Number of Layers">&nbsp;&nbsp;
                         <input type="button" onclick="fillSampleValues()" value="Fill Sample Values">
-                    </div>
                     <br>
                     <input type="button" onclick="quickDraw()" value="Quick Draw"=></input>
                 </form>
                 <br>
-                <div class="hiddenButtons">
                     <div id="dynamicInput">
                         <!-- Entry 1<br><input type="text" name="myInputs[]"> -->
                     </div>
                     <input type="button" onclick="buildCrystal()" value="Create Structure"=>
-                </div>
             </article>
             <article id="tab2">
                 <br>
                 <form>
-                    <b>Omega</b>:
+                    <b>&Omega;</b>:
                     <input type="text" size="6" id="omega"> &nbsp;&nbsp;&nbsp;&nbsp;
-                    <b>K<sub>1</sub></b>:
+                    <b>k<sub>1</sub></b>:
                     <input type="text" size="6" id="k1"> &nbsp;&nbsp;&nbsp;&nbsp;
-                    <b>K<sub>2</sub></b>:
+                    <b>k<sub>2</sub></b>:
                     <input type="text" size="6" id="k2"> &nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="button" onclick="getIncomingMode()" value="Enter"=> <input type="button" onclick="printDispersionChart('dispersionChart', 900, 500)" value="Print Dispersion Relationship"=>
+                    <br>
+                    <input type="button" onclick="getIncomingMode()" value="Enter"=> 
+                    <br>
+                    <input type="button" onclick="printDispersionChart('dispersionChart', 900, 500)" value="Print Dispersion Relationship"=> with z range 
+                    <input type="text" size="6" id="range" value="4"> 
                     <br>
                     <br>
                 </form>
@@ -139,20 +135,20 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                       Left: <input type="text" size="6" id="j1"> v<sub>1</sub> +
+                       From Left: <input type="text" size="6" id="j1"> v<sub>1</sub> +
                     <input type="text" size="6" id="j2"> v <sub>2</sub>
                     <br>
                     <div id="backwardModes">
                         Backward Modes: =  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        Right:
+                        From Right:
                     <input type="text" size="6" id="j3"> v<sub>3</sub> +
                     <input type="text" size="6" id="j4">v<sub>4</sub>
                     </div>
                     
                     <br>
-                    <input type="button" onclick="printFieldsChart('linechart_material', 900, 500)" value="Print Determine Field"=> relative to
+                    <input type="button" onclick="printFieldsChart('linechart_material', 900, 500)" value="Plot EMfield component"=> 
                     <select id="shownVal">
                         <option value="Ex">Ex</option>
                         <option value="Ey">Ey</option>
@@ -160,9 +156,6 @@
                         <option value="Hy">Hy</option>
                     </select> 
                     <br>
-                    from 
-                    <input type="text" size="6" id="zMin"> z<sub>Min</sub> to
-                     <input type="text" size="6" id="zMax"> z<sub>Max</sub> (leave blank for default chart values)
 
                     <br>
                     <br>
@@ -183,10 +176,7 @@
             </article>
         </section>
     </section>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'>
-    </script>
-    <script src="js/index.js">
-    </script>
+    
 
 
 
@@ -212,5 +202,10 @@
 
     
 </body>
+<script>
+quickDraw();
+
+
+</script>
 
 </html>

@@ -2,12 +2,8 @@
 var emScattering = emScattering || {};
 
 
-// Intrinsic impedance of free space in Ohms
+// In Ohms
 emScattering.ETTA_0 = 376.73031;
-
-// Speed of light in free space in m/s -- CURRENTLY IN UNITS WHERE THE NUMERICAL VALUE IS 1
-// emScattering.C = 299792458.0; // m/s
-emScattering.C = 1;
 
 /*
 Layer Object
@@ -42,7 +38,7 @@ Prints out the numeric array to the console. 'pre' is a string that is printed b
 */
 emScattering.print = function(pre, mat) {
     document.write(pre + numeric.prettyPrint(mat) + "<br>");
-};
+}
 
 /*
 Prints out to the console a large array in an easily copied format.
@@ -53,7 +49,7 @@ emScattering.printFields = function(fields) {
         console.log(fields.z[i]+" "+fields.Ex[i]+" "+fields.Ey[i]+" "+fields.Hx[i]
             +" "+fields.Hy[i]);
     }
-};
+}
 
 /*
 Prints out a large array in an easily copied format.
@@ -71,7 +67,7 @@ emScattering.printFields2 = function(fields) {
         document.write("</tr>");
     }
     document.write("</table>");
-};
+}
 
 emScattering.printDispersion = function(dispersion) {
     document.write("<table><tr><td>kz</td>");
@@ -86,7 +82,7 @@ emScattering.printDispersion = function(dispersion) {
             document.write("<td>" + dispersion.layersDispersions[j][i] + "</td>");
         document.write("</tr>");
     }
-};
+}
 
 emScattering.printModes = function(modes) {
     for (var i = 0; i < modes.length; i++) {
@@ -96,22 +92,7 @@ emScattering.printModes = function(modes) {
         document.write("<br>");
         document.write("<br>");
     }
-};
-
-emScattering.printTransmissionGraph = function(tGraph) {
-    document.write("<table><tr><td>omega</td>");
-    for (var i = 0; i < tGraph.kzList.length; i++)
-        document.write("<td>kz_3=" + tGraph.kzList[i] + "</td>")
-    document.write("</tr>");
-
-    for (i = 0; i < tGraph.omegaRange.length; i++) {
-        document.write("<tr>");
-        document.write("<td>" + tGraph.omegaRange[i] + "</td>");
-        for (var j = 0; j < tGraph.kzList.length; j++)
-            document.write("<td>" + tGraph.transmissionCoeffArrays[j][i] + "</td>");
-        document.write("</tr>");
-    }
-};
+}
 
 /*
 Returns an nxn matrix with every element set to 0.
@@ -234,8 +215,8 @@ Returns a normalized value z' for a given 'z'. 'z' is a numeric vector.
 z' = k_0 * z where k_0 is the freespace wavelength.
 */
 emScattering.normalizeZ = function(z, k0) {
-    return z.mul(numeric.rep(numeric.dim(z), new numeric.T(k0, 0)));
-};
+    return z.mul(numeric.rep(numeric.dim(z), new numeric.T(k0, 0)));;
+}
 
 
 /*
@@ -255,9 +236,9 @@ emScattering.Structure = function(layers) {
     this.layers = layers;
     this.numLayers = layers.length;
     
-    this.transferMatrices = new Array(this.numLayers-1);
-    this.eigenvectors = new Array(this.numLayers);
-    this.eigenvalues = new Array(this.numLayers);
+    this.transferMatrices = Array(this.numLayers-1);
+    this.eigenvectors = Array(this.numLayers);
+    this.eigenvalues = Array(this.numLayers);
     
     this.generalTransferMatrix = numeric.T.identity(4);
 };
@@ -267,33 +248,29 @@ emScattering.Structure.prototype.calcEigenvectorsIsotropic = function(kx, ky) {
         var layer = this.layers[i];
         this.eigenvectors[i] = emScattering.eigenvectorsIsotropic(layer.epsilon, layer.mu, kx, ky);
     }
-};
+}
 
 emScattering.Structure.prototype.calcEigenvaluesIsotropic = function(kx, ky) {
     for (var i = 0; i < this.numLayers; i++) {
         var layer = this.layers[i];
         this.eigenvalues[i] = emScattering.eigenvaluesIsotropicDiag(layer.epsilon, layer.mu, kx, ky);
     }
-};
+}
 
 /*
 Creates the transfer matrices for the given free space wavelength k_0. 
 */
 emScattering.Structure.prototype.calcTransferMatrices = function(k_0, kx, ky) {
-    this.transferMatrices = new Array(this.numLayers-1);
-    this.calcEigenvectorsIsotropic(kx/k_0, ky/k_0);
-    this.calcEigenvaluesIsotropic(kx/k_0, ky/k_0);
+    this.transferMatrices = Array(this.numLayers-1);
+    this.calcEigenvectorsIsotropic(kx, ky);
+    this.calcEigenvaluesIsotropic(kx, ky);
     
     // Calculates the transfer matrices between each layer in the structure
     if (this.numLayers > 1) {
         for (var i = 0, N = this.transferMatrices.length; i < N; i++) {
             var wNext = this.eigenvectors[i+1].inv();
             var w = this.eigenvectors[i];
-            var znorm;
-            if (i == N-1 || i == 0)
-                znorm = 0;
-            else
-                znorm = this.layers[i].length * k_0;
+            var znorm = this.layers[i].length * k_0;
             var expLambda = emScattering.expEigenvaluesIsotropicDiag(this.eigenvalues[i], znorm);
             this.transferMatrices[i] = wNext.dot(w.dot(expLambda));
         }
@@ -301,7 +278,7 @@ emScattering.Structure.prototype.calcTransferMatrices = function(k_0, kx, ky) {
     //this.transferMatrices[0] = this.eigenvectors[1].inv().dot(this.eigenvectors[0]);
     
     // General transfer matrix 
-    for (i = 0; i < this.numLayers-1; i++) {
+    for (var i = 0; i < this.numLayers-1; i++) {
         this.generalTransferMatrix = this.transferMatrices[i].dot(this.generalTransferMatrix);
     }
 };
@@ -319,7 +296,7 @@ U+ = [U+_1 U+_2] -- the two forward propogating outgoing modes on the right of t
 */
 emScattering.Structure.prototype.calcScatteringMatrix = function(k_0, kx, ky) {
     this.calcTransferMatrices(k_0, kx, ky);
-
+    
     // Block matrices composing the general transfer matrix T = [T11 T12; T21 T22]
     var T11 = this.generalTransferMatrix.getBlock([0,0], [1,1]);
     var T12 = this.generalTransferMatrix.getBlock([0,2], [1,3]);
@@ -361,7 +338,7 @@ emScattering.PhotonicStructure1D = function(epsilon, mu, length) {
     this.N = this.layers.length;
     this.k0 = -1;   // TODO: Use to cache the results
     this.S = [];
-};
+}
 
 /* 
 Solves the scattering problem at the given free space wavelength k0 and the specified 
@@ -382,8 +359,8 @@ and Hy. There is a one-to-one correspondence between an element in z and the oth
 */
 emScattering.PhotonicStructure1D.prototype.determineField = function(k0, kx, ky, J) {
     var N = this.crystal.numLayers;
-    var numPoints = 100;    // Number of points calculated per unit length
-    var _Ex = new Array(), _Ey = new Array(), _Hx = new Array(), _Hy = new Array(), _z = new Array();
+    var numPoints = 100;    // Number of points calcualted per unit length
+    var _Ex = Array(), _Ey = Array(), _Hx = Array(), _Hy = Array(), _z = Array();
      
     var U = this.scattering(k0, kx, ky, J);
     
@@ -418,7 +395,7 @@ emScattering.PhotonicStructure1D.prototype.determineField = function(k0, kx, ky,
         } 
     }
     return {z: _z, Ex: _Ex, Ey: _Ey, Hx: _Hx, Hy: _Hy};
-};
+}
 
 /*
 Returns the dispersion relationship for each layer and the ambient mediums on the left 
@@ -436,7 +413,7 @@ dispersion.layersDispersions: an array of the calculated k_z values for the k_0 
 // where the user must use the hardcoded names of the properties to access the data
 // TODO: Return as a function of kz instead of k0 (aka the frequency) -- the reverse of the current 
 emScattering.PhotonicStructure1D.prototype.dispersionRelationship = function(kx, ky, khi, numPoints) {
-    var _kz = new Array();
+    var _kz = Array(); 
     var kz_pos = numeric.linspace(0, khi, Math.ceil(numPoints/2));
     for (var i = kz_pos.length-1; i > 0; i--)
         _kz.push(-1*kz_pos[i]);
@@ -444,20 +421,19 @@ emScattering.PhotonicStructure1D.prototype.dispersionRelationship = function(kx,
     for (i = 0; i < kz_pos.length; i++)
         _kz.push(kz_pos[i]);
     
-    var dispersionRelationships = new Array();
-    for (i = 0; i < this.N; i++) {
-        var k0 = new Array();
+    var dispersionRelationships = Array();
+    for (var i = 0; i < this.N; i++) {
+        var k0 = Array();
         var den = this.layers[i].mu*this.layers[i].epsilon;
         for (var j = 0; j < _kz.length; j++) {
             var num = Math.pow(_kz[j],2) + Math.pow(kx,2) + Math.pow(ky,2);
-            k0.push(emScattering.C * Math.sqrt(num / den));
+            k0.push(Math.sqrt(num / den));
         }
         dispersionRelationships.push(k0);
     }
-    // ACTUALLY RETURNS THE ANGULAR FREQUENCY -- NEEDS TO ALSO BE CHANGED IN GUI CODE
-    // TODO: Return a DispersionRelationGraph object similar to how transmission() works
+    
     return {kz: _kz, layersDispersions: dispersionRelationships};
-};
+}
 
 /*
 Returns the z-coordiantes of the edges of the interfaces. The edges of the ambient mediums 
@@ -471,47 +447,13 @@ the ith position of the returned array. The returned coordinates correspond the 
 coordinate system used to plot the field values and in other methods of this object. 
 */
 emScattering.PhotonicStructure1D.prototype.materialInterfaces = function() {
-    var interfaces = new Array();
+    var interfaces = Array();
     interfaces.push(0);
     for (var i = 0; i < this.N; i++)
         interfaces.push(interfaces[i] + this.layers[i].length);
     
     return interfaces;
-};
-
-/*
-Returns the transmission vs. frequency graph object. For the specified k_z values (along with the k_x and k_y values), the
-function returns the transmission for each of the k_z values over the specified omega range.
- */
-emScattering.PhotonicStructure1D.prototype.transmission = function(kzList, kx, ky, omegaLo, omegaHi, numPoints)  {
-    omegaRange = numeric.linspace(omegaLo, omegaHi, numPoints);
-
-    var ambientLeftEigenvalue, ambientRightEigenvalue;
-    var transmissionCoeffArrays = new Array();
-
-    for (var i = 0; i < kzList.length; i++) {
-        var num = Math.pow(kzList[i],2) + Math.pow(kx,2) + Math.pow(ky,2);
-        var den = this.layers[0].mu*this.layers[0].epsilon;
-        var omegaMin = emScattering.C * Math.sqrt(num/den);
-
-        var transmissionCoeff = new Array();
-        for (var j = 0, N = omegaRange.length; j < N; j++) {
-            if (omegaRange[j] >= omegaMin) {
-                var S = this.crystal.calcScatteringMatrix(omegaRange[j] / emScattering.C, kx, ky);
-                var transmission = Math.pow(S.get([2, 0]).norm2(), 2);
-                //emScattering.print("omega = " + omegaRange[j] + ", S = ", S)
-                transmissionCoeff.push(transmission);
-            }
-            else {
-                transmissionCoeff.push(0);
-            }
-        }
-        transmissionCoeffArrays.push(transmissionCoeff);
-    }
-
-    return new emScattering.TransmissionCoeffGraph(kzList, kx, ky, omegaRange, transmissionCoeffArrays);
-
-};
+}
 
 /* 
 Returns the wavelengths of the incoming modes supported by the structure. As this is an isotropic, 
@@ -523,79 +465,37 @@ on the right of the structure.
 */
 // TODO: Change for normal incidence. Deduce incoming from the transfer matrices.
 emScattering.PhotonicStructure1D.prototype.incomingModes = function(k0,kx,ky) {
-    this.scattering(k0, kx, ky, [0,0,0,0]);
-    return emScattering.Mode1D.createModes(this.crystal.eigenvalues[0],this.crystal.eigenvectors[0]);
-};
+    this.scattering(k0, kx, ky, [0,0,0,0])
+    var modes = emScattering.Mode1D.createModes(this.crystal.eigenvalues[0],this.crystal.eigenvectors[0]);
+    return modes;
+}
 
-
-/*
- TransmissionCoeffGraph Object
- ------------------------------------------------------------------------------------
- Represents the transmission vs. frequency for a list of specified kz values at set kx and ky values over a range of
- frequencies. Able to query the transmission for a given wavenumber (if it is available).
- */
-emScattering.TransmissionCoeffGraph = function(kzList, kx, ky, omegaRange, transmissionCoeffArrays) {
-    this.kzList = kzList;
-    this.kx = kx;
-    this.ky = ky;
-    this.omegaRange = omegaRange;
-    this.transmissionCoeffArrays = transmissionCoeffArrays;
-    console.log(transmissionCoeffArrays);
-};
-
-emScattering.TransmissionCoeffGraph.prototype.getOmegaRange = function() {
-    return this.omegaRange;
-};
-
-emScattering.TransmissionCoeffGraph.prototype.getTransmission = function(kz) {
-    if (this.kzInGraph(kz))
-        return this.transmissionCoeffArrays(kzList.indexOf(kz));
-    else
-        return [];
-};
-
-emScattering.TransmissionCoeffGraph.prototype.k1 = function() {
-    return this.kx;
-};
-
-emScattering.TransmissionCoeffGraph.prototype.k2 = function() {
-    return this.ky;
-};
-
-emScattering.TransmissionCoeffGraph.prototype.kzList = function() {
-    return this.kzList;
-};
-
-emScattering.TransmissionCoeffGraph.prototype.kzInGraph = function(kz) {
-    return this.kzList.indexOf(kz) != -1;
-};
 
 /*
 Mode Object
 ------------------------------------------------------------------------------------
-Represents a 1D mode. Contains the eigenvalue, eigenvector, and if it is forward travelling or not.
 */
 emScattering.Mode1D = function(eigenvalue, eigenvector) {
     this.eigenvalue = eigenvalue;
     this.eigenvector = eigenvector;
     this.forward = emScattering.isForwardPropogatingMode(eigenvector);
-};
+}
 
 emScattering.Mode1D.prototype.wavenumber = function() {
     var wn = new numeric.T(0,-1);
     return wn.dot(eigenvalue);
-};
+}
 
 emScattering.Mode1D.prototype.modeVector = function() {
     return eigenvector;
-};
+}
 
 emScattering.Mode1D.createModes = function(eigenvalues, eigenvectors) {
-        var modes = new Array(4);
+        var modes = Array(4)
         for (var i = 0; i < 4; i++)
             modes[i] = new emScattering.Mode1D(eigenvalues.get([i,i]), eigenvectors.getBlock([0,i], [3,i]));
         return modes;
-};
+}
 
 // TODO: Move calculation for Poynting vector into its own function
 emScattering.isForwardPropogatingMode = function(eigenvector) {
@@ -610,28 +510,21 @@ emScattering.isForwardPropogatingMode = function(eigenvector) {
     //emScattering.print("",eigenvector);
     //emScattering.print("",poynting);
     return poynting.x > 0;
-};
+}
 
 
 /*
 For testing.
 ------------------------------------------------------------------------------------
 */
-//epsilon = [1,5,10,5,1];
-//mu = [1,10,1,10,1];
-//lengths = [6,3,3,3,6];
+// epsilon = [1,5,10,5,1];
+// mu = [1,10,1,10,1];
+// lengths = [6,3,3,3,6];
 
-//crystal = new emScattering.PhotonicStructure1D(epsilon, mu, lengths);
+// crystal = new emScattering.PhotonicStructure1D(epsilon, mu, lengths);
 
-//transmissionGraph = crystal.transmission([1,2,3], 0, 0, 0, 5, 100);
-//emScattering.printTransmissionGraph(transmissionGraph);
-
-//fields = crystal.determineField(5, 0, 0, [1,0,0,0]);
+//fields = crystal.determineField(1, .2, .4, [1,0,-1,0]);
 //emScattering.printFields2(fields);
-
-//S = crystal.crystal.calcScatteringMatrix(5 / emScattering.C, 0, 0);
-//transmission = Math.pow(S.get([2, 0]).norm2(), 2);
-//emScattering.print("", transmission);
 
 //dispersion = crystal.dispersionRelationship(1, 1, 4, 100);
 //emScattering.printDispersion(dispersion);
