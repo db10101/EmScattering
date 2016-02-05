@@ -80,6 +80,9 @@
                 <li>
                     <a href="#tab4">Dispersion Graph</a>
                 </li>
+                <li>
+                    <a href="#tab5">Transmission Graph</a>
+                </li>
             
         </ul>
         <div class="clr"></div>
@@ -117,9 +120,13 @@
                     <br>
                     <input type="button" onclick="getIncomingMode()" value="Enter"=> 
                     <br>
-                    <input type="button" onclick="printDispersionChart('dispersionChart', 900, 500)" value="Print Dispersion Relationship"=> with z range 
+                    <input type="button" onclick="printDispersionChart('dispersionChart', 900, 500)" value="Print Dispersion Relationship"=> Z range:
                     <input type="text" size="6" id="range" value="4"> 
                     <br>
+                    <input type="button" onclick="printTransmissionChart('transmissionChart', 900, 500)" value="Print Transmission Chart"=> Omega Range:
+                    <input type="text" size="6" id="oLow" value="0"> to <input type="text" size="6" id="oHi" value="5"> 
+                    <br>
+                    and kz values <input type="text" size="10" id="kzList" value="1,2,3">
                     <br>
                 </form>
                 <div id="hiddenModes">
@@ -172,6 +179,10 @@
             <article id="tab4">
             <br>
             <div id="dispersionChart"> 
+            </div>
+            </article>
+            <article id="tab5">
+            <div id="transmissionChart"> 
             </div>
             </article>
         </section>

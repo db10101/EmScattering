@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Test Stuff</title>
+	<link href="css/style.css" rel="stylesheet">
+    <script language="Javascript" src="js/jquery-2.1.4.js" type="text/javascript"></script>
+    <script type="text/javascript"></script>
+    <script type="text/javascript" src="js/jsapi.js"></script>
+    <script src="js/numeric-1.2.6.js">
+    </script>
+    <script src="js/emScattering.js" type="text/javascript">
+    </script>
+    <script src="js/dynamic.js" type="text/javascript">
+    </script>
+    <script language="Javascript" src="js/velocity.min.js" type="text/javascript">
+    </script>
+	
+</head>
+<body>
+
+<script>
+	/*
+For testing.
+------------------------------------------------------------------------------------
+*/
+epsilon = [1,5,10,5,1];
+mu = [1,10,1,10,1];
+lengths = [6,3,3,3,6];
+
+crystal = new emScattering.PhotonicStructure1D(epsilon, mu, lengths);
+
+transmissionGraph = crystal.transmission([1,2,3], 0, 0, 0, 5, 100);
+emScattering.printTransmissionGraph(transmissionGraph);
+
+//fields = crystal.determineField(5, 0, 0, [1,0,0,0]);
+//emScattering.printFields2(fields);
+
+//S = crystal.crystal.calcScatteringMatrix(5 / emScattering.C, 0, 0);
+//transmission = Math.pow(S.get([2, 0]).norm2(), 2);
+//emScattering.print("", transmission);
+
+//dispersion = crystal.dispersionRelationship(1, 1, 4, 100);
+emScattering.printDispersion(dispersion);
+
+//interfaces = crystal.materialInterfaces();
+//emScattering.print("", interfaces);
+
+//incoming = crystal.incomingModes(1,.2,.4);
+//emScattering.printModes(incoming);
+	</script>
+	
+</body>
+</html>

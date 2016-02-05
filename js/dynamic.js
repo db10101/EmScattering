@@ -12,7 +12,12 @@ function quickDraw() {
      printFieldsChart('linechart2_material', 900, 500);
      getIncomingMode();
      printDispersionChart('dispersionChart', 900, 500);
+     printTransmissionChart('transmissionChart', 900, 500);
 
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
 function addStruct(x, color, width, height) {
@@ -102,6 +107,78 @@ function fillSampleValues() {
      document.getElementById("j3").value = jj3;
      document.getElementById("j4").value = jj4;
 }
+
+
+function printTransmissionChart(divName, width, height) {
+
+
+     var crystal = new emScattering.PhotonicStructure1D(epsilon, mu, length);
+     var k1 = parseFloat(document.getElementById("k1").value);
+     var k2 = parseFloat(document.getElementById("k2").value);
+     var omegLow = document.getElementById("oLow").value;
+     var omegHigh = document.getElementById("oHi").value;
+     var kZsList = [];
+     var kZs = document.getElementById("kzList").value;
+     for(var i = 0; i < kZs.length; i++) {
+      console.log(kZs.charAt(i));
+      if(isNumeric(kZs.charAt(i))) {
+        var str = ""+kZs.charAt(i);
+        kZsList.push(parseInt(str));
+      }
+     }
+     console.log(kZsList);
+     var transmissionGraph = crystal.transmission(kZsList, k1, k2, omegLow, omegHigh, 100);
+     var data = new google.visualization.DataTable();
+      data.addColumn('number', 'omega');
+      for(var i = 0; i < transmissionGraph.kzList.length; i++){
+        data.addColumn('number', 'kz'+transmissionGraph.kzList[i]);
+      }
+      var dataArray = new Array(transmissionGraph.omegaRange.length);
+      for(var i = 0; i < dataArray.length; i++)
+      {
+        dataArray[i] = new Array(transmissionGraph.kzList.length);
+      }
+
+      for(var i = 0; i < transmissionGraph.omegaRange.length; i++) {
+        dataArray[i][0] = transmissionGraph.omegaRange[i];
+        for(var j = 1; j <= transmissionGraph.kzList.length; j++) {
+          dataArray[i][j] = transmissionGraph.transmissionCoeffArrays[j-1][i];
+        }
+      }
+
+
+      for(var i = 0; i<dataArray.length; i++){
+        data.addRows([
+          dataArray[i]
+          ]);
+      }
+      var options = {
+        chart: {
+          title: 'dispersion relationship'
+        },
+        chartArea: {
+          left: 40,
+          top: 5
+        },
+        width: width,
+        height: height
+      };
+
+      var chart = new google.visualization.LineChart(document.getElementById(divName));
+
+      chart.draw(data, options);
+      console.log(dataArray[0][1]);
+      //emScattering.printDispersion(dispersion);
+
+      var myElements = document.querySelectorAll(".hiddenChart1");
+     for (var i = 0; i < myElements.length; i++) {
+               myElements[i].style.opacity = 1;
+          }
+
+    
+
+}
+
 function printDispersionChart(divName, width, height) {
 
      var range = document.getElementById("range").value;
@@ -155,9 +232,6 @@ function printDispersionChart(divName, width, height) {
      for (var i = 0; i < myElements.length; i++) {
                myElements[i].style.opacity = 1;
           }
-
-    
-
 }
 function printFieldsChart(divName, width, height) {
      var o = parseFloat(document.getElementById("omega").value);
@@ -208,12 +282,6 @@ function printFieldsChart(divName, width, height) {
      var options = {
         chart: {
           title: document.getElementById("shownVal").value+ ' Values in Relation to Z'
-        },
-        width: width,
-        height: height,
-        chartArea: {
-          left: 40,
-          top: 5
         }
 
         };
